@@ -34,10 +34,7 @@ class DWTRootTree():
     def dwt2(self, img, wavelet='db1'):
         coeffs = pywt.dwt2(img, wavelet)
         cA, (cH, cV, cD) = coeffs
-        return  DWTSubTree(cA, level=self.level, maxLevel=self.maxLevel),\
-                DWTSubTree(cH, level=self.level, maxLevel=self.maxLevel),\
-                DWTSubTree(cV, level=self.level, maxLevel=self.maxLevel),\
-                DWTSubTree(cD, level=self.level, maxLevel=self.maxLevel)
+        return  DWTSubTree(cA, level=self.level, maxLevel=self.maxLevel), cH, cV, cD
 
     def showImage(self, image, window='window'):
         cv2.imshow('window', image)
@@ -75,36 +72,42 @@ class DWTSubTree():
         self.run()
 
     def run(self):
-        if (self.level == self.maxLevel):
-            return self.image
-
         self.cA, self.cV, self.cD, self.cH = self.dwt2(self.image)
 
     # DWT Algorithm
     def dwt2(self, img, wavelet='db1'):
         coeffs = pywt.dwt2(img, wavelet)
         cA, (cH, cV, cD) = coeffs
-        return  DWTSubTree(cA, level=self.level, maxLevel=self.maxLevel),\
-                DWTSubTree(cV, level=self.level, maxLevel=self.maxLevel),\
-                DWTSubTree(cD, level=self.level, maxLevel=self.maxLevel),\
-                DWTSubTree(cH, level=self.level, maxLevel=self.maxLevel)
+        if (self.level == self.maxLevel):
+            return cA, cH, cV, cD
+
+        return  DWTSubTree(cA, level=self.level, maxLevel=self.maxLevel), cV, cD, cH
 
 
 img_path = [arg for arg in sys.argv]
 images_path = [f for f in listdir('./images/dataset') if isfile(join('./images/dataset', f))]
 
 if __name__ == "__main__":
+    result = []
     img = cv2.imread(img_path[1]) / 255
-    root = DWTRootTree(img, maxLevel=3)
-    root.run()
 
-    def getLeaf(tree):
+    QueryImageClass = DWTRootTree(img, maxLevel=2)
+    QueryImageClass.run()
+
+    def getLeafs(tree):
         if (tree.maxLevel == tree.level):
-            return root.showImage(tree.image)
-        return getLeaf(tree.cA)
+            return tree.cA, tree.cH, tree.cV, tree.cD
+        return getLeafs(tree.cA)
 
-    getLeaf(root.C1_cA)
-    getLeaf(root.C1_cV)
-    getLeaf(root.C1_cD)
+    cA_q, cH_q, cV_q, cD_q = getLeafs(QueryImageClass.C1_cA)
 
-    # print(LA.norm(root.C1_cA.cA.image - root2.C1_cA.cA.image, ord=2))
+    for path in images_path:
+        dataset_img = cv2.imread('./images/dataset/%s'%path) / 255
+        DatasetImageClass = DWTRootTree(dataset_img, maxLevel=2)
+        DatasetImageClass.run()
+        cA_d, cH_d, cV_d, cD_d = getLeafs(DatasetImageClass.C1_cA)
+
+        distance = LA.norm(cA_q - cA_d, ord=2) + LA.norm(cH_q - cH_d, ord=2) + LA.norm(cV_q - cV_d, ord=2) + LA.norm(cD_q - cD_d, ord=2)
+        result.append({ 'path': path, 'distance': distance})
+
+    [print(pic) for pic in sorted(result, key=lambda k: k['distance'])[0:15]]
