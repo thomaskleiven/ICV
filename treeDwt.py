@@ -7,9 +7,9 @@ from os.path import isfile, join
 from numpy import linalg as LA
 from pprint import pprint
 
-HEIGHT=256
-WIDTH=256
-MAX_LEVEL=3
+HEIGHT=512
+WIDTH=512
+MAX_LEVEL=1
 
 class DWTRootTree():
     def __init__(self, img, maxLevel):
@@ -47,17 +47,11 @@ class DWTRootTree():
         resized = cv2.resize(image, dim, interpolation=inter)
         return resized
 
-    def getColorSpace(self, R, G, B):
-        C1 = ( R + B + G ) / 3
-        C2 = ( R + (max(R, G, B) - B) ) / 2
-        C3 = ( R + 2 * (( max(R, G, B) - G) + B) ) / 4
-        return C1, C2, C3
-
     def getRGBvalues(self):
         # Iterate all pixels
         for row in range(0, HEIGHT):
             for col in range(0, WIDTH):
-                C1_pixel, C2_pixel, C3_pixel = self.getColorSpace(self.image[row, col, 0], self.image[row, col, 1], self.image[row, col, 2])
+                C1_pixel, C2_pixel, C3_pixel = self.image[row, col, 0], self.image[row, col, 1], self.image[row, col, 2]
                 self.C1[row][col] = C1_pixel
                 self.C2[row][col] = C2_pixel
                 self.C3[row][col] = C3_pixel
@@ -90,7 +84,8 @@ images_path = [f for f in listdir('./images/dataset') if isfile(join('./images/d
 
 if __name__ == "__main__":
     result = []
-    img = cv2.imread(img_path[1]) / 255
+    img = np.uint8(cv2.imread(img_path[1]))
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     QueryImageClass = DWTRootTree(img, maxLevel=MAX_LEVEL)
     QueryImageClass.run()
@@ -105,7 +100,8 @@ if __name__ == "__main__":
     C3_cA_q, C3_cH_q, C3_cV_q, C3_cD_q = getLeafs(QueryImageClass.C3_cA)
 
     for path in images_path:
-        dataset_img = cv2.imread('./images/dataset/%s'%path) / 255
+        dataset_img = np.uint8(cv2.imread('./images/dataset/%s'%path))
+        dataset_img = cv2.cvtColor(dataset_img, cv2.COLOR_BGR2HSV)
         DatasetImageClass = DWTRootTree(dataset_img, maxLevel=MAX_LEVEL)
         DatasetImageClass.run()
         C1_cA_d, C1_cH_d, C1_cV_d, C1_cD_d = getLeafs(DatasetImageClass.C1_cA)
