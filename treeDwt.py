@@ -9,6 +9,7 @@ from pprint import pprint
 
 HEIGHT=256
 WIDTH=256
+MAX_LEVEL=3
 
 class DWTRootTree():
     def __init__(self, img, maxLevel):
@@ -91,7 +92,7 @@ if __name__ == "__main__":
     result = []
     img = cv2.imread(img_path[1]) / 255
 
-    QueryImageClass = DWTRootTree(img, maxLevel=2)
+    QueryImageClass = DWTRootTree(img, maxLevel=MAX_LEVEL)
     QueryImageClass.run()
 
     def getLeafs(tree):
@@ -99,15 +100,22 @@ if __name__ == "__main__":
             return tree.cA, tree.cH, tree.cV, tree.cD
         return getLeafs(tree.cA)
 
-    cA_q, cH_q, cV_q, cD_q = getLeafs(QueryImageClass.C1_cA)
+    C1_cA_q, C1_cH_q, C1_cV_q, C1_cD_q = getLeafs(QueryImageClass.C1_cA)
+    C2_cA_q, C2_cH_q, C2_cV_q, C2_cD_q = getLeafs(QueryImageClass.C2_cA)
+    C3_cA_q, C3_cH_q, C3_cV_q, C3_cD_q = getLeafs(QueryImageClass.C3_cA)
 
     for path in images_path:
         dataset_img = cv2.imread('./images/dataset/%s'%path) / 255
-        DatasetImageClass = DWTRootTree(dataset_img, maxLevel=2)
+        DatasetImageClass = DWTRootTree(dataset_img, maxLevel=MAX_LEVEL)
         DatasetImageClass.run()
-        cA_d, cH_d, cV_d, cD_d = getLeafs(DatasetImageClass.C1_cA)
+        C1_cA_d, C1_cH_d, C1_cV_d, C1_cD_d = getLeafs(DatasetImageClass.C1_cA)
+        C2_cA_d, C2_cH_d, C2_cV_d, C2_cD_d = getLeafs(DatasetImageClass.C2_cA)
+        C3_cA_d, C3_cH_d, C3_cV_d, C3_cD_d = getLeafs(DatasetImageClass.C3_cA)
 
-        distance = LA.norm(cA_q - cA_d, ord=2) + LA.norm(cH_q - cH_d, ord=2) + LA.norm(cV_q - cV_d, ord=2) + LA.norm(cD_q - cD_d, ord=2)
+        distance =  LA.norm(C1_cA_q - C1_cA_d, ord=2) + LA.norm(C1_cH_q - C1_cH_d, ord=2) + LA.norm(C1_cV_q - C1_cV_d, ord=2) + LA.norm(C1_cD_q - C1_cD_d, ord=2)+\
+                    LA.norm(C2_cA_q - C2_cA_d, ord=2) + LA.norm(C2_cH_q - C2_cH_d, ord=2) + LA.norm(C2_cV_q - C2_cV_d, ord=2) + LA.norm(C2_cD_q - C2_cD_d, ord=2)+\
+                    LA.norm(C3_cA_q - C3_cA_d, ord=2) + LA.norm(C3_cH_q - C3_cH_d, ord=2) + LA.norm(C3_cV_q - C3_cV_d, ord=2) + LA.norm(C3_cD_q - C3_cD_d, ord=2)
+
         result.append({ 'path': path, 'distance': distance})
 
-    [print(pic) for pic in sorted(result, key=lambda k: k['distance'])[0:15]]
+[print(pic) for pic in sorted(result, key=lambda k: k['distance'])[0:15]]
