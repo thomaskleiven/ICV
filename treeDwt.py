@@ -6,6 +6,25 @@ from os import listdir
 from os.path import isfile, join
 from numpy import linalg as LA
 from pprint import pprint
+from sklearn import decomposition
+from matplotlib import pyplot as plt
+
+import matplotlib as mpl
+mpl.rcParams['svg.fonttype'] = "none"
+mpl.rcParams['font.size'] = 16
+
+fig = plt.figure()
+ax = fig.add_subplot(1,1,1)
+
+def plot(data):
+    ax.spines["right"].set_visible(False)
+    ax.spines["top"].set_visible(False)
+    ax.xaxis.set_ticks_position("bottom")
+    ax.yaxis.set_ticks_position("left")
+    ax.set_xlabel("\$\$")
+    ax.set_ylabel("\$\$")
+    ax.plot(data, '-o', color="black")
+    plt.show()
 
 HEIGHT=512
 WIDTH=512
@@ -19,6 +38,7 @@ class DWTRootTree():
         self.image = self.resizeImage(img)
         self.level = 0
         self.maxLevel = maxLevel
+        self.pca = decomposition.PCA(n_components=10)
 
         # Add color components keys
         self.C1 = np.empty(shape=(HEIGHT, WIDTH))
@@ -27,9 +47,14 @@ class DWTRootTree():
 
     def run(self):
         self.getRGBvalues()
-        self.C1_cA, self.C1_cV, self.C1_cD, self.C1_cH = self.dwt2(self.C1)
-        self.C2_cA, self.C2_cV, self.C2_cD, self.C2_cH = self.dwt2(self.C2)
-        self.C3_cA, self.C3_cV, self.C3_cD, self.C3_cH = self.dwt2(self.C3)
+        self.components_C1 = self.pca.fit_transform(self.C1)
+        self.components_C2 = self.pca.fit_transform(self.C2)
+        self.components_C3 = self.pca.fit_transform(self.C3)
+
+        self.C1_cA, self.C1_cV, self.C1_cD, self.C1_cH = self.dwt2(self.components_C1)
+        self.C2_cA, self.C2_cV, self.C2_cD, self.C2_cH = self.dwt2(self.components_C2)
+        self.C3_cA, self.C3_cV, self.C3_cD, self.C3_cH = self.dwt2(self.components_C3)
+
 
     # DWT Algorithm
     def dwt2(self, img, wavelet='db1'):
