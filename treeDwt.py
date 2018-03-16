@@ -81,10 +81,17 @@ class DWTSubTree():
 
         if (self.level == self.maxLevel):
             try:
-                dataset.create_dataset("%s/level%s/%s/cA/"%(path, self.level, self.id), data=cA, dtype=np.float)
-                dataset.create_dataset("%s/level%s/%s/cH/"%(path, self.level, self.id), data=cH, dtype=np.float)
-                dataset.create_dataset("%s/level%s/%s/cV/"%(path, self.level, self.id), data=cV, dtype=np.float)
-                dataset.create_dataset("%s/level%s/%s/cD/"%(path, self.level, self.id), data=cD, dtype=np.float)
+                grp = dataset.create_dataset("%s/level%s/%s/cA/"%(path, self.level, self.id), data=cA, dtype=np.float)
+                grp.attrs['std'] = np.std(cA)
+
+                grp = dataset.create_dataset("%s/level%s/%s/cH/"%(path, self.level, self.id), data=cH, dtype=np.float)
+                grp.attrs['std'] = np.std(cH)
+
+                grp = dataset.create_dataset("%s/level%s/%s/cV/"%(path, self.level, self.id), data=cV, dtype=np.float)
+                grp.attrs['std'] = np.std(cV)
+
+                grp = dataset.create_dataset("%s/level%s/%s/cD/"%(path, self.level, self.id), data=cD, dtype=np.float)
+                grp.attrs['std'] = np.std(cD)
             except Exception as exc:
                 print(str(exc))
             return cA, cH, cV, cD
@@ -93,6 +100,25 @@ class DWTSubTree():
 
 img_path = [arg for arg in sys.argv]
 images_path = [f for f in listdir('./images/dataset') if isfile(join('./images/dataset', f))]
+
+# According to paper only std of cA is computed
+def filterBySTD(datasetPath, queryPath, beta=0.5):
+    sigma_one_marked = dataset[datasetPath]['level%s'%MAX_LEVEL]['C1']['cA'].attrs['std']
+    sigma_two_marked = dataset[datasetPath]['level%s'%MAX_LEVEL]['C2']['cA'].attrs['std']
+    sigma_three_marked = dataset[datasetPath]['level%s'%MAX_LEVEL]['C3']['cA'].attrs['std']
+
+    sigma_one = dataset[queryPath]['level%s'%MAX_LEVEL]['C1']['cA'].attrs['std']
+    sigma_two = dataset[queryPath]['level%s'%MAX_LEVEL]['C2']['cA'].attrs['std']
+    sigma_three = dataset[queryPath]['level%s'%MAX_LEVEL]['C3']['cA'].attrs['std']
+
+    if (
+        sigma_one * beta < sigma_one_marked and sigma_one_marked < sigma_one / beta\
+        or (sigma_two * beta < sigma_two_marked and sigma_two_marked < sigma_two / beta)\
+        and (sigma_three * beta < sigma_three_marked and sigma_three_marked < sigma_three / beta)\
+       ):
+        return True
+    return False
+
 
 def main():
     result = []
@@ -112,7 +138,10 @@ def main():
     C3_cA_q, C3_cH_q, C3_cV_q, C3_cD_q = getLeafs(QueryImageClass.C3_cA)
 
     for path in images_path:
+
         if ("%s/level%s"%(path, MAX_LEVEL) in dataset):
+            if(not filterBySTD(datasetPath=path, queryPath=images_path[1])):
+                continue
             C1_cA_d, C1_cH_d, C1_cV_d, C1_cD_d = dataset[path]['level%s'%MAX_LEVEL]['C1']['cA'].value,\
                                                  dataset[path]['level%s'%MAX_LEVEL]['C1']['cH'].value,\
                                                  dataset[path]['level%s'%MAX_LEVEL]['C1']['cV'].value,\
@@ -137,9 +166,9 @@ def main():
             C2_cA_d, C2_cH_d, C2_cV_d, C2_cD_d = getLeafs(DatasetImageClass.C2_cA)
             C3_cA_d, C3_cH_d, C3_cV_d, C3_cD_d = getLeafs(DatasetImageClass.C3_cA)
 
-        distance =  LA.norm(C1_cA_q - C1_cA_d, ord=2) + LA.norm(C1_cH_q - C1_cH_d, ord=2) + LA.norm(C1_cV_q - C1_cV_d, ord=2) + LA.norm(C1_cD_q - C1_cD_d, ord=2)+\
-                    LA.norm(C2_cA_q - C2_cA_d, ord=2) + LA.norm(C2_cH_q - C2_cH_d, ord=2) + LA.norm(C2_cV_q - C2_cV_d, ord=2) + LA.norm(C2_cD_q - C2_cD_d, ord=2)+\
-                    LA.norm(C3_cA_q - C3_cA_d, ord=2) + LA.norm(C3_cH_q - C3_cH_d, ord=2) + LA.norm(C3_cV_q - C3_cV_d, ord=2) + LA.norm(C3_cD_q - C3_cD_d, ord=2)
+        distance =  LA.norm(C1_cA_q - C1_cA_d, ord=2) +LA.norm(C1_cH_q - C1_cH_d, ord=2) + LA.norm(C1_cV_q - C1_cV_d, ord=2) + LA.norm(C1_cD_q - C1_cD_d, ord=2)+\
+                    LA.norm(C2_cA_q - C2_cA_d, ord=2) +LA.norm(C2_cH_q - C2_cH_d, ord=2) + LA.norm(C2_cV_q - C2_cV_d, ord=2) + LA.norm(C2_cD_q - C2_cD_d, ord=2)+\
+                    LA.norm(C3_cA_q - C3_cA_d, ord=2) +LA.norm(C3_cH_q - C3_cH_d, ord=2) + LA.norm(C3_cV_q - C3_cV_d, ord=2) + LA.norm(C3_cD_q - C3_cD_d, ord=2)
 
         result.append({ 'path': path, 'distance': distance})
     [print('Image %s, distance: %s'%(pic['path'], pic['distance'])) for pic in sorted(result, key=lambda k: k['distance'])[0:15]]
@@ -147,3 +176,7 @@ def main():
 if __name__ == "__main__":
     main()
     pass
+
+# LA.norm(C1_cH_q - C1_cH_d, ord=2) + LA.norm(C1_cV_q - C1_cV_d, ord=2) + LA.norm(C1_cD_q - C1_cD_d, ord=2)+
+# LA.norm(C2_cH_q - C2_cH_d, ord=2) + LA.norm(C2_cV_q - C2_cV_d, ord=2) + LA.norm(C2_cD_q - C2_cD_d, ord=2)+
+# LA.norm(C3_cH_q - C3_cH_d, ord=2) + LA.norm(C3_cV_q - C3_cV_d, ord=2) + LA.norm(C3_cD_q - C3_cD_d, ord=2)
