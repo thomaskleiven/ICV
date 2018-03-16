@@ -166,9 +166,9 @@ def main():
             C2_cA_d, C2_cH_d, C2_cV_d, C2_cD_d = getLeafs(DatasetImageClass.C2_cA)
             C3_cA_d, C3_cH_d, C3_cV_d, C3_cD_d = getLeafs(DatasetImageClass.C3_cA)
 
-        distance =  LA.norm(C1_cA_q - C1_cA_d, ord=2) +LA.norm(C1_cH_q - C1_cH_d, ord=2) + LA.norm(C1_cV_q - C1_cV_d, ord=2) + LA.norm(C1_cD_q - C1_cD_d, ord=2)+\
-                    LA.norm(C2_cA_q - C2_cA_d, ord=2) +LA.norm(C2_cH_q - C2_cH_d, ord=2) + LA.norm(C2_cV_q - C2_cV_d, ord=2) + LA.norm(C2_cD_q - C2_cD_d, ord=2)+\
-                    LA.norm(C3_cA_q - C3_cA_d, ord=2) +LA.norm(C3_cH_q - C3_cH_d, ord=2) + LA.norm(C3_cV_q - C3_cV_d, ord=2) + LA.norm(C3_cD_q - C3_cD_d, ord=2)
+        distance =  LA.norm(C1_cA_q - C1_cA_d, ord=2) +2*LA.norm(C1_cH_q - C1_cH_d, ord=2) + 2*LA.norm(C1_cV_q - C1_cV_d, ord=2) + 2*LA.norm(C1_cD_q - C1_cD_d, ord=2)+\
+                    LA.norm(C2_cA_q - C2_cA_d, ord=2) +2*LA.norm(C2_cH_q - C2_cH_d, ord=2) + 2*LA.norm(C2_cV_q - C2_cV_d, ord=2) + 2*LA.norm(C2_cD_q - C2_cD_d, ord=2)+\
+                    LA.norm(C3_cA_q - C3_cA_d, ord=2) +2*LA.norm(C3_cH_q - C3_cH_d, ord=2) + 2*LA.norm(C3_cV_q - C3_cV_d, ord=2) + 2*LA.norm(C3_cD_q - C3_cD_d, ord=2)
 
         result.append({ 'path': path, 'distance': distance})
     [print('Image %s, distance: %s'%(pic['path'], pic['distance'])) for pic in sorted(result, key=lambda k: k['distance'])[0:15]]
