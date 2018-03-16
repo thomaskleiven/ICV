@@ -17,7 +17,7 @@ mpl.rcParams['font.size'] = 16
 
 fig = plt.figure()
 ax = fig.add_subplot(1,1,1)
-dataset = h5py.File("dataset.hdf5", "r+")
+dataset = h5py.File("dataset.hdf5", "a")
 
 HEIGHT=512
 WIDTH=512
@@ -42,9 +42,9 @@ class DWTRootTree():
         self.getRGBvalues()
 
         if ('--pca' in args):
-            self.components_C1 = self.pca.fit_transform(self.C1)[0:10]
-            self.components_C2 = self.pca.fit_transform(self.C2)[0:10]
-            self.components_C3 = self.pca.fit_transform(self.C3)[0:10]
+            self.components_C1 = self.pca.fit_transform(self.C1)[0:20]
+            self.components_C2 = self.pca.fit_transform(self.C2)[0:20]
+            self.components_C3 = self.pca.fit_transform(self.C3)[0:20]
 
             self.C1_cA, self.C1_cV, self.C1_cD, self.C1_cH = self.dwt2(self.components_C1, path, id="C1")
             self.C2_cA, self.C2_cV, self.C2_cD, self.C2_cH = self.dwt2(self.components_C2, path, id="C2")
@@ -168,8 +168,9 @@ def main():
     C3_cA_q, C3_cH_q, C3_cV_q, C3_cD_q = getLeafs(QueryImageClass.C3_cA)
 
     for path in images_path:
-        filterBySTD(datasetPath=path, queryPath=args[1])
+
         if ("%s/level%s/C1/cA"%(path, MAX_LEVEL) in dataset if '--pca' not in args else "%s/level%s/C1/pca"%(path, MAX_LEVEL) in dataset):
+            filterBySTD(datasetPath=path, queryPath=args[1])
             C1_cA_d, C1_cH_d, C1_cV_d, C1_cD_d = dataset[path]['level%s'%MAX_LEVEL]['C1']['pca/cA' if '--pca' in args else 'cA'].value,\
                                                  dataset[path]['level%s'%MAX_LEVEL]['C1']['pca/cH' if '--pca' in args else 'cH'].value,\
                                                  dataset[path]['level%s'%MAX_LEVEL]['C1']['pca/cV' if '--pca' in args else 'cV'].value,\
