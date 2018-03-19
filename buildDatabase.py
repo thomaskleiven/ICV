@@ -14,7 +14,7 @@ images_path = [f for f in listdir(args[1]) if isfile(join(args[1], f))]
 
 HEIGHT=64
 WIDTH=64
-MAX_LEVEL=2
+MAX_LEVEL=3
 
 class DWTRootTree():
     def __init__(self, img, maxLevel):
@@ -101,16 +101,17 @@ def main(path):
     DatasetImageClass = DWTRootTree(dataset_img, maxLevel=MAX_LEVEL)
     DatasetImageClass.run()
 
-    C1_cA, C1_cH, C1_cV, C1_cD = getLeafNodes(DatasetImageClass.C1_cA)
-    C2_cA, C2_cH, C2_cV, C2_cD = getLeafNodes(DatasetImageClass.C2_cA)
-    C3_cA, C3_cH, C3_cV, C3_cD = getLeafNodes(DatasetImageClass.C3_cA)
-
-    return list(zip(np.ravel(C1_cA), np.ravel(C1_cH), np.ravel(C1_cV),\
-                    np.ravel(C1_cD), np.ravel(C2_cA), np.ravel(C2_cH),\
-                    np.ravel(C2_cV), np.ravel(C2_cD), np.ravel(C3_cA),\
-                    np.ravel(C3_cH), np.ravel(C3_cV),  np.ravel(C3_cD)))
+    feature_vector = []
+    [feature_vector.append(np.ravel(value)) for index, value in enumerate([ getLeafNodes(DatasetImageClass.C1_cA),\
+                                                                            getLeafNodes(DatasetImageClass.C2_cA),\
+                                                                            getLeafNodes(DatasetImageClass.C3_cA)])]
+    return np.ravel(feature_vector)
 
 if __name__ == "__main__":
+    if (len(args) != 2):
+        print("Syntax: filename.py ./database --pca(flag)")
+        sys.exit(0)
+
     pool=Pool()
     m = []
     result = []
@@ -120,8 +121,9 @@ if __name__ == "__main__":
     for r in result:
         m.append(r.get())
 
-    t = [item for sublist in m for item in sublist]
     from sklearn.neighbors import KDTree
-    tree = KDTree(t)
+    tree = KDTree(m)
+
+    # print(tree.query(m[84].reshape(1,-1), 1))
 
     cPickle.dump(tree, open('tree_pca.p' if'--pca' in args else 'tree.p','wb'))

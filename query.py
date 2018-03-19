@@ -9,6 +9,7 @@ from numpy import linalg as LA
 import _pickle as cPickle
 
 args = [arg for arg in sys.argv]
+
 images_path = [f for f in listdir(args[1]) if isfile(join(args[1], f))]
 
 with open('tree.p' if '--pca' not in args else 'tree_pca.p', 'rb') as f:
@@ -20,22 +21,17 @@ def main():
     QueryImageClass = database.DWTRootTree(query_img, maxLevel=database.MAX_LEVEL)
     QueryImageClass.run()
 
-    C1_cA_q, C1_cH_q, C1_cV_q, C1_cD_q = database.getLeafNodes(QueryImageClass.C1_cA)
-    C2_cA_q, C2_cH_q, C2_cV_q, C2_cD_q = database.getLeafNodes(QueryImageClass.C2_cA)
-    C3_cA_q, C3_cH_q, C3_cV_q, C3_cD_q = database.getLeafNodes(QueryImageClass.C3_cA)
-    q = list(zip(   np.ravel(C1_cA_q), np.ravel(C1_cH_q), np.ravel(C1_cV_q),\
-                    np.ravel(C1_cD_q), np.ravel(C2_cA_q), np.ravel(C2_cH_q),\
-                    np.ravel(C2_cV_q), np.ravel(C2_cD_q), np.ravel(C3_cA_q),\
-                    np.ravel(C3_cH_q), np.ravel(C3_cV_q),  np.ravel(C3_cD_q)))
+    feature_vector = []
+    [feature_vector.append(np.ravel(value)) for index, value in enumerate([ database.getLeafNodes(QueryImageClass.C1_cA),\
+                                                                            database.getLeafNodes(QueryImageClass.C2_cA),\
+                                                                            database.getLeafNodes(QueryImageClass.C3_cA)])]
 
-
-    # QueryImageClass.showImage(C1_cD_q)
-
-    ind = tree.query_radius(q, r=0)
-    print(ind)
+    ind = tree.query_radius(np.ravel(feature_vector).reshape(1,-1), r=args[3])
     t = [item for sublist in ind for item in sublist]
-    #print(np.unique(np.floor(np.array(t)/(C1_cA_q.shape[:][1]**2)).astype(dtype=np.int), return_counts=True))
-    print([images_path[pos] for pos in np.unique(np.floor((np.unique(t) / (C1_cA_q.shape[:][1]*C1_cA_q.shape[:][0]))).astype(dtype=np.int))])
+    [print(images_path[image]) for image in t]
 
 if __name__ == "__main__":
+    if (len(args) != 4):
+        print("Syntax: filename.py ./database ./query-image.jpg distance(int) --pca(flag)")
+        sys.exit(0)
     main()
