@@ -25,13 +25,17 @@ def main():
     [feature_vector.append(np.ravel(value)) for index, value in enumerate([ database.getLeafNodes(QueryImageClass.C1_cA),\
                                                                             database.getLeafNodes(QueryImageClass.C2_cA),\
                                                                             database.getLeafNodes(QueryImageClass.C3_cA)])]
-
-    ind = tree.query_radius(np.ravel(feature_vector).reshape(1,-1), r=args[3])
+    if ('--r' in args):
+        ind = tree.query_radius(np.ravel(feature_vector).reshape(1,-1), r=args[3])
+    else:
+        dist, ind = tree.query(np.ravel(feature_vector).reshape(1,-1), int(args[3]))
     t = [item for sublist in ind for item in sublist]
-    [print(images_path[image]) for image in t]
+    print(np.sum(dist))
+    #print(len(t))
+    #[print(images_path[image]) for image in t]
 
 if __name__ == "__main__":
-    if (len(args) != 4):
-        print("Syntax: filename.py ./database ./query-image.jpg distance(int) --pca(flag)")
+    if (len(args) < 4):
+        print("Syntax: filename.py ./database ./query-image.jpg distance(int) --pca(flag) --r(flag)")
         sys.exit(0)
     main()

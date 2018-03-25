@@ -12,8 +12,8 @@ import _pickle as cPickle
 args = [arg for arg in sys.argv]
 images_path = [f for f in listdir(args[1]) if isfile(join(args[1], f))]
 
-HEIGHT=64
-WIDTH=64
+HEIGHT=128
+WIDTH=128
 MAX_LEVEL=3
 
 class DWTRootTree():
@@ -108,7 +108,7 @@ def main(path):
     return np.ravel(feature_vector)
 
 if __name__ == "__main__":
-    if (len(args) != 2):
+    if (len(args) < 2):
         print("Syntax: filename.py ./database --pca(flag)")
         sys.exit(0)
 
