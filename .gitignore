@@ -1,2 +1,9 @@
 images/
 dataset.hdf5
+kdtree.py
+*report*
+plotWavletTransforms.py
+*.p
+*.log
+test.py
+/results
