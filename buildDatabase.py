@@ -97,7 +97,7 @@ def getLeafNodes(tree):
 
 def main(path):
     dataset_img = np.uint8(cv2.imread(args[1]+'/%s'%path))
-    dataset_img = cv2.cvtColor(dataset_img, cv2.COLOR_BGR2HSV) / 255
+    dataset_img = cv2.cvtColor(dataset_img, cv2.COLOR_BGR2HSV)
     DatasetImageClass = DWTRootTree(dataset_img, maxLevel=MAX_LEVEL)
     DatasetImageClass.run()
 
@@ -123,7 +123,5 @@ if __name__ == "__main__":
 
     from sklearn.neighbors import KDTree
     tree = KDTree(m)
-
-    # print(tree.query(m[84].reshape(1,-1), 1))
 
     cPickle.dump(tree, open('tree_pca.p' if'--pca' in args else 'tree.p','wb'))

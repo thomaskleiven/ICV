@@ -17,7 +17,7 @@ with open('tree.p' if '--pca' not in args else 'tree_pca.p', 'rb') as f:
 
 def main():
     query_img = np.uint8(cv2.imread(args[2]))
-    query_img = cv2.cvtColor(query_img, cv2.COLOR_BGR2HSV) / 255
+    query_img = cv2.cvtColor(query_img, cv2.COLOR_BGR2HSV)
     QueryImageClass = database.DWTRootTree(query_img, maxLevel=database.MAX_LEVEL)
     QueryImageClass.run()
 
@@ -30,9 +30,7 @@ def main():
     else:
         dist, ind = tree.query(np.ravel(feature_vector).reshape(1,-1), int(args[3]))
     t = [item for sublist in ind for item in sublist]
-    print(np.sum(dist))
-    #print(len(t))
-    #[print(images_path[image]) for image in t]
+    [print(images_path[image]) for image in t]
 
 if __name__ == "__main__":
     if (len(args) < 4):
