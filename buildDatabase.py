@@ -1,3 +1,5 @@
+import time
+start_time = time.time()
 import pywt
 import cv2
 import numpy as np
@@ -123,5 +125,7 @@ if __name__ == "__main__":
 
     from sklearn.neighbors import KDTree
     tree = KDTree(m)
+
+    print("--- Time to build KD-tree: %.2f seconds ---"% (time.time() - start_time))
 
     cPickle.dump(tree, open('tree_pca.p' if'--pca' in args else 'tree.p','wb'))

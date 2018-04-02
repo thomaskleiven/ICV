@@ -1,3 +1,5 @@
+import time
+start_time = time.time()
 import buildDatabase as database
 import numpy as np
 import cv2
@@ -7,6 +9,7 @@ from os import listdir
 from os.path import isfile, join
 from numpy import linalg as LA
 import _pickle as cPickle
+import matplotlib.pyplot as plt
 
 args = [arg for arg in sys.argv]
 
@@ -29,8 +32,29 @@ def main():
         ind = tree.query_radius(np.ravel(feature_vector).reshape(1,-1), r=args[3])
     else:
         dist, ind = tree.query(np.ravel(feature_vector).reshape(1,-1), int(args[3]))
+
+    print("--- Query time: %.2f seconds ---"% (time.time() - start_time))
+
     t = [item for sublist in ind for item in sublist]
-    [print(images_path[image]) for image in t]
+
+    images = []
+    [images.append(QueryImageClass.resizeImage(cv2.cvtColor(cv2.imread(args[1] + images_path[image]), cv2.COLOR_BGR2RGB))) for image in t]
+    show_images(images)
+
+def show_images(images, cols = 5, titles = None):
+    assert((titles is None) or (len(images) == len(titles)))
+    n_images = len(images)
+    if titles is None: titles = ['Image (%d)' % i for i in range(1,n_images + 1)]
+    fig = plt.figure()
+    for n, (image, title) in enumerate(zip(images, titles)):
+        a = fig.add_subplot(cols, np.ceil(n_images/float(cols)), n + 1)
+        if image.ndim == 2:
+            plt.gray()
+        plt.axis('off')
+        a.set_title(n)
+        plt.imshow(image)
+    fig.set_size_inches(np.array(fig.get_size_inches()) * n_images)
+    plt.show()
 
 if __name__ == "__main__":
     if (len(args) < 4):
