@@ -3,7 +3,6 @@ start_time = time.time()
 import buildDatabase as database
 import numpy as np
 import cv2
-import h5py
 import sys
 from os import listdir
 from os.path import isfile, join
@@ -38,6 +37,8 @@ def main():
     t = [item for sublist in ind for item in sublist]
 
     images = []
+    
+    # Open and display returned images
     [images.append(QueryImageClass.resizeImage(cv2.cvtColor(cv2.imread(args[1] + images_path[image]), cv2.COLOR_BGR2RGB))) for image in t]
     show_images(images)
 

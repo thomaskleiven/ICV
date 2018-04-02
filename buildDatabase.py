@@ -1,23 +1,28 @@
-import time
-start_time = time.time()
-import pywt
-import cv2
-import numpy as np
-from os import listdir
-from os.path import isfile, join
-import h5py
-from sklearn import decomposition
-from multiprocessing import Pool
-import sys
-import _pickle as cPickle
+import time                                  # For time recording
+start_time = time.time()                     # Start time recording
+import pywt                                  # Get access to wavl
+import cv2                                   # OpenCV to open and load images
+import numpy as np                           # For effectively handle arrays
+from os import listdir                       # List local dir
+from os.path import isfile, join             # Check if file and join paths cross-platform
+from sklearn import decomposition            # Access PCA and KD-tree
+from multiprocessing import Pool             # Allowing parallelization
+import sys                                   # Access arguments from command line
+import _pickle as cPickle                    # Save and load KD-tree
 
+# Read arguments from user
 args = [arg for arg in sys.argv]
+
+# Read images
 images_path = [f for f in listdir(args[1]) if isfile(join(args[1], f))]
 
+# Set size for resizing of images
 HEIGHT=128
 WIDTH=128
+# Set number of wavelet transforms
 MAX_LEVEL=3
 
+# Main class for image processing
 class DWTRootTree():
     def __init__(self, img, maxLevel):
         self.C1_cA, self.C1_cV, self.C1_cD, self.C1_cH = None, None, None, None
@@ -34,8 +39,11 @@ class DWTRootTree():
         self.C3 = np.empty(shape=(HEIGHT, WIDTH))
 
     def run(self):
+
+        # Split image's color components
         self.getRGBvalues()
 
+        # PCA
         if ('--pca' in args):
             self.components_C1 = self.pca.fit_transform(self.C1)[0:10]
             self.components_C2 = self.pca.fit_transform(self.C2)[0:10]
@@ -50,6 +58,7 @@ class DWTRootTree():
             self.C2_cA, self.C2_cV, self.C2_cD, self.C2_cH = self.dwt2(self.C2)
             self.C3_cA, self.C3_cV, self.C3_cD, self.C3_cH = self.dwt2(self.C3)
 
+    # Display image
     def showImage(self, image, window='window'):
         cv2.imshow('window', image)
         cv2.waitKey()
@@ -59,6 +68,8 @@ class DWTRootTree():
     def dwt2(self, img, wavelet='db1'):
         coeffs = pywt.dwt2(img, wavelet)
         cA, (cH, cV, cD) = coeffs
+
+        # Return cA for next wavelet transform
         return  DWTSubTree(cA, level=self.level, maxLevel=self.maxLevel), cH, cV, cD
 
     # Resize
@@ -104,6 +115,8 @@ def main(path):
     DatasetImageClass.run()
 
     feature_vector = []
+
+    # Structure feature vectors for KD-tree
     [feature_vector.append(np.ravel(value)) for index, value in enumerate([ getLeafNodes(DatasetImageClass.C1_cA),\
                                                                             getLeafNodes(DatasetImageClass.C2_cA),\
                                                                             getLeafNodes(DatasetImageClass.C3_cA)])]
@@ -114,6 +127,7 @@ if __name__ == "__main__":
         print("Syntax: filename.py ./database --pca(flag)")
         sys.exit(0)
 
+    # Open pool
     pool=Pool()
     m = []
     result = []
