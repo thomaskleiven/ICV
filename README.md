@@ -1,6 +1,6 @@
 # Image-Processing-Computer-Vision
 
-An algorithm for Content Based Image Retrieval (CBIR) with Wavelet features. The system takes in a query image and try 
+An algorithm for Content Based Image Retrieval (CBIR) with Wavelet features. The system takes in a query image and tries 
 to find the most 'semantically similar' images in a database of images. The CBIR system uses Discrete Wavelet 
 Transform to generate a core image feature representation in order to compare images.
 
