@@ -17,7 +17,7 @@ Subsequently, query the obtained database by running:
 python3 query.py ./path_to_image
 ```
 
-###Example
+### Example
 ```python
 python3 buildDatabase.py ./images
 ```
@@ -26,4 +26,4 @@ python3 buildDatabase.py ./images
 python3 query.py ./query-horse.jpg
 ```
 
-###Results
+### Results
