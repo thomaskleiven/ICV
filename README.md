@@ -25,5 +25,3 @@ python3 buildDatabase.py ./images
 ```bash
 python3 query.py ./query-horse.jpg
 ```
-
-### Results
